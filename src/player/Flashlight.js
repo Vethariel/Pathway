@@ -14,8 +14,9 @@ import {
   ON_TIME_BEFORE_BLINK_MAX,
   ON_TIME_BEFORE_BLINK_MIN,
 } from "./flashlightConfig.js";
+import { assetUrl } from "../assetUrl.js";
 
-const SWITCH_SOUND_URL = "/assets/switch.mp3";
+const SWITCH_SOUND_URL = assetUrl("assets/switch.mp3");
 
 /**
  * Flashlight: draining battery (brightness + cone shrink) and late malfunction blinking.

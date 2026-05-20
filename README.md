@@ -14,10 +14,21 @@ npm run dev
 Open the URL shown in the terminal (Vite defaults to port 5173). Click **Enter the pathway**, then use pointer lock to play.
 
 ```bash
-npm run build    # production build → dist/
-npm run preview  # serve dist/
-npm test         # logic unit tests
+npm run build        # production build → dist/
+npm run build:pages  # same, with base path for GitHub Pages
+npm run preview      # serve dist/
+npm test             # logic unit tests
 ```
+
+### GitHub Pages
+
+The game is meant to live at **https://vethariel.github.io/Pathway/** (project site).
+
+1. In the repo: **Settings → Pages → Build and deployment → Source: GitHub Actions**
+2. Push to `main` — the workflow builds with `npm run build:pages` and deploys `dist/`
+3. Open the **/Pathway/** URL (not the bare `vethariel.github.io` root unless that is where you deployed)
+
+Do **not** use “Deploy from branch” with the repo root — that publishes source files, not the Vite build. Do **not** deploy the raw repo (`/src/main.js` only exists in dev).
 
 ## Controls
 

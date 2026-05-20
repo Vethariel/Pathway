@@ -1,12 +1,14 @@
+import { assetUrl } from "../assetUrl.js";
+
 export const SOUNDS = {
-  ambient: "/assets/ambient_sound.mp3",
-  walk: "/assets/walking_grass.mp3",
-  jumpscare: "/assets/jumpscare.mp3",
-  lurking: "/assets/lurking_monster.mp3",
-  horrorWarning: "/assets/horror_warning.mp3",
-  monsterAttack: "/assets/monster_attack.mp3",
-  monsterGrowl: "/assets/monster_growl.mp3",
-  heartbeat: "/assets/hearthbeat.mp3",
+  ambient: assetUrl("assets/ambient_sound.mp3"),
+  walk: assetUrl("assets/walking_grass.mp3"),
+  jumpscare: assetUrl("assets/jumpscare.mp3"),
+  lurking: assetUrl("assets/lurking_monster.mp3"),
+  horrorWarning: assetUrl("assets/horror_warning.mp3"),
+  monsterAttack: assetUrl("assets/monster_attack.mp3"),
+  monsterGrowl: assetUrl("assets/monster_growl.mp3"),
+  heartbeat: assetUrl("assets/hearthbeat.mp3"),
 };
 
 export const AMBIENT_VOLUME = 0.58;

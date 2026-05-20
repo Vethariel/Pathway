@@ -1,7 +1,8 @@
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { assetUrl } from "../assetUrl.js";
 
-const WOLF_URL = "/assets/wolf_monster.glb";
+const WOLF_URL = assetUrl("assets/wolf_monster.glb");
 
 const SCALE = 1.5;
 const GROUND_DROP = 2.7;

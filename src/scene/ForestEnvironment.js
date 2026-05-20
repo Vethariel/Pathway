@@ -15,8 +15,9 @@ import {
   shouldSkipTreePlacement,
 } from "./corridorLogic.js";
 import { fixTreeMaterials } from "./fixTreeMaterials.js";
+import { assetUrl } from "../assetUrl.js";
 
-const TREE_PACK_URL = "/assets/tree_pack.glb";
+const TREE_PACK_URL = assetUrl("assets/tree_pack.glb");
 
 function mulberry32(seed) {
   return function () {
