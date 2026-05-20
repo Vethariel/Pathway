@@ -7,5 +7,9 @@ export default defineConfig(({ mode }) => ({
   server: {
     open: true,
   },
+  preview: {
+    port: 4173,
+    open: true,
+  },
   publicDir: "public",
 }));

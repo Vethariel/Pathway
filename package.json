@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "vite build",
     "build:pages": "vite build --mode ghpages",
-    "preview": "vite preview",
+    "preview": "npm run build:pages && vite preview --mode ghpages",
     "test": "node scripts/run-corridor-tests.mjs && node scripts/run-wolf-encounter-tests.mjs && node scripts/run-conduct-tests.mjs",
     "test:vitest": "vitest run"
   },

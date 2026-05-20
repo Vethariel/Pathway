@@ -15,10 +15,12 @@ Open the URL shown in the terminal (Vite defaults to port 5173). Click **Enter t
 
 ```bash
 npm run build        # production build → dist/
-npm run build:pages  # same, with base path for GitHub Pages
-npm run preview      # serve dist/
+npm run build:pages  # same, with relative paths for GitHub Pages
+npm run preview      # rebuild for Pages, then serve dist/ at http://localhost:4173/
 npm test             # logic unit tests
 ```
+
+**If the console shows `main.js` 404:** the browser is loading the **source** `index.html`, not the build. Use `npm run dev` (port 5173) for development, or `npm run preview` (port 4173) after a build. Do not open `index.html` with Live Server, “Open with Live Preview”, or `python -m http.server` — those cannot run Vite’s module graph.
 
 ### GitHub Pages
 
