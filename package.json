@@ -1,0 +1,22 @@
+{
+  "name": "pathway",
+  "version": "1.0.0",
+  "description": "First-person horror walking game — foggy forest corridor and flashlight",
+  "author": "Daniel Gracia",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "node scripts/run-corridor-tests.mjs && node scripts/run-wolf-encounter-tests.mjs && node scripts/run-conduct-tests.mjs",
+    "test:vitest": "vitest run"
+  },
+  "dependencies": {
+    "three": "^0.176.0"
+  },
+  "devDependencies": {
+    "vite": "^6.3.5"
+  }
+}
