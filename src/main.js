@@ -13,7 +13,13 @@ import {
   PLAYER_SPAWN_Z,
 } from "./scene/corridorConfig.js";
 import { GameAudio } from "./audio/GameAudio.js";
-import { applyEnvironmentFog, enableFogOnMaterials } from "./scene/applyEnvironmentFog.js";
+import {
+  applyGameFog,
+  applyManualFogEnvironment,
+  applyManualFogToObject,
+  applySceneFog,
+} from "./scene/applyEnvironmentFog.js";
+import { FogTestMode } from "./scene/FogTestMode.js";
 import { ForestEnvironment } from "./scene/ForestEnvironment.js";
 import { FogSilhouette } from "./scene/FogSilhouette.js";
 
@@ -27,13 +33,47 @@ const finalBestEl = document.getElementById("final-best");
 const menuBestEl = document.getElementById("menu-best");
 const menuBestValueEl = document.getElementById("menu-best-value");
 const btnStart = document.getElementById("btn-start");
+const btnFogTest = document.getElementById("btn-fog-test");
+const btnFogTestBack = document.getElementById("btn-fog-test-back");
 const btnRetry = document.getElementById("btn-retry");
 const btnCredits = document.getElementById("btn-credits");
 const btnCreditsClose = document.getElementById("btn-credits-close");
 const creditsEl = document.getElementById("credits");
+const fogTestEl = document.getElementById("fog-test");
+const fogTestStatusEl = document.getElementById("fog-test-status");
 const loadErrorEl = document.getElementById("load-error");
 
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+let animationFrameId = 0;
+
+/** Stop HMR / reload from leaking WebGL contexts (browser blocks after too many). */
+function disposeRendererSession(renderer) {
+  if (!renderer) return;
+  renderer.dispose();
+  renderer.domElement?.remove();
+}
+
+// Remove canvases left over if a previous HMR pass did not dispose
+app.querySelectorAll("canvas").forEach((el) => el.remove());
+
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true });
+} catch (err) {
+  console.error(err);
+  loadErrorEl.hidden = false;
+  loadErrorEl.textContent =
+    "WebGL blocked or unavailable. Hard-refresh (Ctrl+Shift+R), close extra 3D tabs, then reload.";
+  throw err;
+}
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    cancelAnimationFrame(animationFrameId);
+    document.exitPointerLock();
+    disposeRendererSession(renderer);
+  });
+}
+
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -44,7 +84,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 app.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-applyEnvironmentFog(scene, renderer);
+applySceneFog(scene, renderer, "manual");
 
 const player = new THREE.Group();
 player.position.set(PLAYER_SPAWN_X, PLAYER_SPAWN_Y, PLAYER_SPAWN_Z);
@@ -79,10 +119,12 @@ function updateBestTimeDisplays() {
 
 function showMenu() {
   gameAudio.stopAmbient();
+  fogTestMode?.exit();
   menuEl.hidden = false;
   creditsEl.hidden = true;
   hudEl.hidden = true;
   gameOverEl.hidden = true;
+  fogTestEl.hidden = true;
   updateBestTimeDisplays();
 }
 
@@ -92,6 +134,10 @@ function showCredits() {
 }
 
 async function beginRun() {
+  fogTestMode?.exit();
+  if (assetsReady) {
+    applyGameFog(scene, renderer, getGameFogRoots());
+  }
   await gameAudio.unlock();
   gameState.startRun();
   resetPlayer();
@@ -116,13 +162,21 @@ function resetPlayer() {
   player.rotation.y = 0;
 }
 
-showMenu();
-updateBestTimeDisplays();
-
 btnStart.addEventListener("click", (e) => {
   e.stopPropagation();
   if (!assetsReady) return;
   void beginRun();
+});
+
+btnFogTest.addEventListener("click", (e) => {
+  e.stopPropagation();
+  if (!assetsReady) return;
+  beginFogTest();
+});
+
+btnFogTestBack.addEventListener("click", (e) => {
+  e.stopPropagation();
+  showMenu();
 });
 
 btnCredits.addEventListener("click", (e) => {
@@ -142,6 +196,10 @@ btnRetry.addEventListener("click", () => {
 });
 
 renderer.domElement.addEventListener("click", () => {
+  if (fogTestMode.isActive) {
+    renderer.domElement.requestPointerLock();
+    return;
+  }
   if (gameState.isGameOver || !gameState.isPlaying) return;
   renderer.domElement.requestPointerLock();
 });
@@ -158,6 +216,18 @@ document.addEventListener("pointerlockchange", () => {
 
 document.addEventListener("mousemove", (e) => {
   if (document.pointerLockElement !== renderer.domElement) return;
+
+  if (fogTestMode.isActive) {
+    player.rotateY(-e.movementX * mouseSensitivity);
+    pitch = THREE.MathUtils.clamp(
+      pitch - e.movementY * mouseSensitivity,
+      -maxPitch,
+      maxPitch,
+    );
+    camera.rotation.x = pitch;
+    return;
+  }
+
   if (gameState.isGameOver || jumpScareCamera.blocksInput()) return;
 
   player.rotateY(-e.movementX * mouseSensitivity);
@@ -189,17 +259,54 @@ const forest = new ForestEnvironment();
 const wolf = new WolfMonster();
 const partnerWolf = new WolfMonster();
 const fogSilhouette = new FogSilhouette(scene);
+function getGameFogRoots() {
+  return [
+    forest.group,
+    flashlight.group,
+    wolf.model,
+    partnerWolf.model,
+    fogSilhouette.group,
+  ];
+}
+
+const fogTestMode = new FogTestMode({
+  scene,
+  renderer,
+  player,
+  camera,
+  forest,
+  fogRoots: [forest.group, flashlight.group],
+  moon,
+  hideInTest: [wolf.model, partnerWolf.model, fogSilhouette.group],
+  overlayEl: fogTestEl,
+  statusEl: fogTestStatusEl,
+  canvas: renderer.domElement,
+  onExit: showMenu,
+  getGameFogRoots,
+});
 let wolfEncounter = null;
 let assetsReady = false;
+
+function beginFogTest() {
+  gameState.reset();
+  document.exitPointerLock();
+  flashlight.reset();
+  menuEl.hidden = true;
+  creditsEl.hidden = true;
+  hudEl.hidden = true;
+  gameOverEl.hidden = true;
+  fogTestMode.enter();
+}
+
+showMenu();
+updateBestTimeDisplays();
 
 const loading = Promise.all([
   forest.load(),
   wolf.load(),
   partnerWolf.load(),
 ]).then(() => {
-  enableFogOnMaterials(forest.group);
-  enableFogOnMaterials(wolf.model);
-  enableFogOnMaterials(partnerWolf.model);
+  applyManualFogEnvironment(scene, renderer, getGameFogRoots());
   scene.add(forest.group);
   scene.add(wolf.model);
   scene.add(partnerWolf.model);
@@ -260,6 +367,14 @@ let playerMovingBackward = false;
 document.addEventListener("keydown", (e) => {
   keys.add(e.code);
 
+  if (fogTestMode.isActive) {
+    if (e.code === "Space" && !e.repeat) {
+      e.preventDefault();
+      flashlight.toggle();
+    }
+    return;
+  }
+
   if (gameState.isGameOver || jumpScareCamera.blocksInput()) return;
   if (!gameState.isPlaying) return;
 
@@ -277,6 +392,8 @@ function updateMovement(delta) {
   playerIsMoving = false;
   playerMovingForward = false;
   playerMovingBackward = false;
+
+  if (fogTestMode.isActive) return;
 
   if (gameState.isGameOver || jumpScareCamera.blocksInput()) return;
   if (!gameState.isPlaying) return;
@@ -311,12 +428,22 @@ function updateLighting() {
 }
 
 function animate() {
-  requestAnimationFrame(animate);
+  animationFrameId = requestAnimationFrame(animate);
   const delta = Math.min(clock.getDelta(), 0.05);
+
+  if (fogTestMode.isActive) {
+    fogTestMode.update(delta);
+    flashlight.update(delta);
+    renderer.render(scene, camera);
+    return;
+  }
 
   updateMovement(delta);
   updateLighting();
   forest.update(player.position);
+  for (const root of getGameFogRoots()) {
+    applyManualFogToObject(root);
+  }
 
   const wolfAudioSnapshot =
     gameState.isPlaying && !gameState.isGameOver
@@ -415,6 +542,7 @@ loading.catch((err) => {
   console.error(err);
   loadErrorEl.hidden = false;
   btnStart.disabled = true;
+  btnFogTest.disabled = true;
 });
 
 window.addEventListener("resize", () => {

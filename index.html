@@ -142,6 +142,32 @@
         box-shadow: 0 0 28px rgba(120, 20, 20, 0.35);
       }
 
+      .btn-secondary {
+        font-size: 0.78rem;
+        letter-spacing: 0.14em;
+        text-indent: 0;
+        text-transform: none;
+        padding: 0.7rem 1.4rem;
+        border-color: rgba(80, 90, 110, 0.55);
+        background: linear-gradient(
+          180deg,
+          rgba(20, 24, 32, 0.92),
+          rgba(10, 12, 18, 0.96)
+        );
+        color: rgba(200, 210, 220, 0.88);
+      }
+
+      .btn-secondary:hover {
+        border-color: rgba(120, 140, 170, 0.75);
+        color: #f0f4f8;
+        box-shadow: 0 0 20px rgba(60, 80, 120, 0.25);
+      }
+
+      .btn-secondary:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+
       .best {
         margin-top: 1.25rem;
         font-size: 0.68rem;
@@ -160,6 +186,55 @@
 
       #hud[hidden] {
         display: none !important;
+      }
+
+      .fog-test-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        pointer-events: none;
+      }
+
+      .fog-test-overlay[hidden] {
+        display: none !important;
+      }
+
+      .fog-test-bar {
+        position: fixed;
+        top: 1rem;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.85rem 1.25rem;
+        background: rgba(6, 8, 12, 0.82);
+        border: 1px solid rgba(80, 100, 130, 0.45);
+        pointer-events: auto;
+        max-width: min(96vw, 28rem);
+        text-align: center;
+      }
+
+      .fog-test-title {
+        font-family: Cinzel, serif;
+        font-size: 0.95rem;
+        letter-spacing: 0.2em;
+        text-indent: 0.2em;
+        color: rgba(210, 220, 235, 0.95);
+      }
+
+      .fog-test-status {
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+        color: rgba(140, 200, 160, 0.9);
+      }
+
+      .fog-test-hint {
+        font-size: 0.62rem;
+        letter-spacing: 0.08em;
+        color: rgba(150, 160, 175, 0.65);
+        margin-bottom: 0.25rem;
       }
 
       .hud-label {
@@ -314,6 +389,9 @@
         </ul>
         <div class="menu-actions">
           <button type="button" class="btn" id="btn-start">Enter the pathway</button>
+          <button type="button" class="btn btn-secondary" id="btn-fog-test">
+            Fog test (manual shader)
+          </button>
           <button type="button" class="btn-ghost" id="btn-credits">Credits</button>
         </div>
         <p class="best" id="menu-best" hidden>Longest survival — <span id="menu-best-value"></span></p>
@@ -350,6 +428,19 @@
     <div id="hud" hidden>
       <p class="hud-label">Survived</p>
       <p class="hud-time" id="hud-time">0.0s</p>
+    </div>
+
+    <div id="fog-test" class="fog-test-overlay" hidden>
+      <div class="fog-test-bar">
+        <p class="fog-test-title">Fog test</p>
+        <p class="fog-test-status" id="fog-test-status">Fog: manual shader</p>
+        <p class="fog-test-hint">
+          W / S — move · Mouse — look · Space — flashlight · Esc — menu
+        </p>
+        <button type="button" class="btn btn-secondary" id="btn-fog-test-back">
+          Back to menu
+        </button>
+      </div>
     </div>
 
     <div id="game-over" class="overlay" hidden>

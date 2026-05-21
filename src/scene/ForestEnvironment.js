@@ -119,7 +119,6 @@ export class ForestEnvironment {
         color: 0x111610,
         roughness: 0.95,
         metalness: 0,
-        fog: true,
       }),
     );
     this._forestFloor.rotation.x = -Math.PI / 2;
@@ -132,7 +131,6 @@ export class ForestEnvironment {
         color: 0x181410,
         roughness: 0.9,
         metalness: 0,
-        fog: true,
         polygonOffset: true,
         polygonOffsetFactor: -1,
         polygonOffsetUnits: -1,

@@ -41,8 +41,6 @@ function fixMaterial(material) {
     mat.roughness = Math.min(mat.roughness ?? 0.9, 0.95);
   }
 
-  mat.fog = true;
-  mat.needsUpdate = true;
   return mat;
 }
 
